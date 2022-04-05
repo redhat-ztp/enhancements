@@ -74,9 +74,48 @@ When the policy is deleted, the resource should return to the pre-managed state 
 What if the user updates others fields in this CR? Can policy enforce only a parameter within the CR?
 
 
+
+
+### Changes to policy API
+```yaml
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+  name: my-policy
+  namespace: common
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: my-configuration-policy
+      spec:
+        object-templates:
+        - complianceType: musthave
+# deleteOption describes what happens with the child objects on the spoke when 
+# the policy is deleted or the placement condition changes removing the cluster from the 
+# policy placement. The deleteOption can be:
+# - "orphan": remove any ACM annotations added by the policy and leave the object intact
+# - "delete": delete the object
+# - "revert": reverts the object to the pre-managed state (in case it existed before the policy was applied)
+          deleteOption: "delete"
+          objectDefinition:
+            apiVersion: mygroup/v1
+            kind: MyKind
+            metadata:
+              name: my-resource
+            spec: {}
+  remediationAction: enforce
+
+```
+
 Unchanged template below this line:
-
-
 ----------
 
 ### Implementation Details/Notes/Constraints [optional]
